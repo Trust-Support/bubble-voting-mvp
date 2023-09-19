@@ -1,16 +1,16 @@
-import { Snowflake, Message, User, WebhookClient, MessageFlags } from 'discord.js';
 import { ArgsOf, Client, Guard } from 'discordx';
 import { Discord, On } from 'discordx';
 import { sanity } from '../lib/sanity';
 import fetchFull from '../guards/fetchFull';
 import gateKeep from '../guards/gateKeep';
 import { webhookClient } from '../lib/webhook';
+import { ForumChannel, ThreadChannel } from 'discord.js';
 
 @Discord()
 export class Reactions {
   @On({ event: 'messageReactionAdd' })
   @Guard(fetchFull, gateKeep)
-  async messageReact([messageReaction, user]: ArgsOf<'messageReactionAdd'>, bot: Client): Promise<void> {
+  async messageReact([reaction, user]: ArgsOf<'messageReactionAdd'>, bot: Client): Promise<void> {
     try {
       /*
         Filter channel and server wide reactions - check both for 
@@ -18,8 +18,8 @@ export class Reactions {
  
         Capture for council channel
       */
-      if (messageReaction.message.channelId == process.env.COUNCIL_CHANNEL_ID ||
-        messageReaction.message.channel?.parentId == process.env.COUNCIL_CHANNEL_ID) {
+      if (reaction.message.channelId == process.env.COUNCIL_CHANNEL_ID ||
+        (reaction?.message?.channel as ThreadChannel | ForumChannel)?.parentId == process.env.COUNCIL_CHANNEL_ID) {
         /*
           Access control should be defined on Discord-level with role permissions
           This is here mostly to make it explicit that higher-hierarchy roles
@@ -27,13 +27,13 @@ export class Reactions {
 
           Get Roles for user
         */
-        const serverRoles = await (await bot.guilds.fetch(process.env.SERVER_ID)).roles.fetch();
+        const serverRoles = await (await bot.guilds.fetch(process.env.SERVER_ID as string)).roles.fetch();
         const modRole = serverRoles.find(({ name }) => name == process.env.COUNCIL_ROLE);
-        const guildMember = await (await bot.guilds.fetch(process.env.SERVER_ID)).members.resolve(user.id);
+        const guildMember: any | null = await (await bot.guilds.fetch(process.env.SERVER_ID as string)).members.resolve(user.id);
         const isCouncilMemberReact = (await guildMember.fetch()).roles.resolve(modRole) !== null;
 
         if (!isCouncilMemberReact) {
-          await messageReaction.remove();
+          await reaction.remove();
 
           return
         }
@@ -49,10 +49,10 @@ export class Reactions {
             balance: Number(process.env.COUNCIL_BUDGET)
           });
 
-        const proposal = await sanity.fetch(`*[_type=="proposal" && _id=="${messageReaction.message.id}"][0]`)
+        const proposal = await sanity.fetch(`*[_type=="proposal" && _id=="${reaction.message.id}"][0]`)
 
         if (proposal == null) {
-          throw new Error(`Proposal \`${messageReaction.message.id}\` not found.`);
+          throw new Error(`Proposal \`${reaction.message.id}\` not found.`);
         }
 
         const { balance: memberBalance } = member;
@@ -64,7 +64,7 @@ export class Reactions {
         const isMemberSolvent = memberBalance > 0;
 
         if (!isMemberSolvent) {
-          await messageReaction.remove();
+          await reaction.remove();
 
           return
         }
@@ -74,11 +74,11 @@ export class Reactions {
           substract from council member's balance
         */
         const proposalPatch = await sanity
-          .patch(messageReaction.message.id)
+          .patch(reaction.message.id)
           .setIfMissing({votes: []})
           .append('votes', [{
-            _key: `${user.id}:${messageReaction.emoji.id}`,
-            emoji: `${messageReaction.emoji}`,
+            _key: `${user.id}:${reaction.emoji.id}`,
+            emoji: `${reaction.emoji}`,
             author: user.id
           }]);
 
@@ -98,9 +98,9 @@ export class Reactions {
           Check threshold, check emoji +
           ensure we haven't already Bubbled this
         */
-        if (messageReaction.count !== Number(process.env.SERVER_THRESHOLD) ||
-          `${messageReaction.emoji}` !== process.env.SERVER_EMOJI ||
-          await sanity.fetch(`*[_type=="proposal" && serverMessage=="${messageReaction.message.id}"][0]`) !== null
+        if (reaction.count !== Number(process.env.SERVER_THRESHOLD) ||
+          `${reaction.emoji}` !== process.env.SERVER_EMOJI ||
+          await sanity.fetch(`*[_type=="proposal" && serverMessage=="${reaction.message.id}"][0]`) !== null
         ) {
           return
         }
@@ -108,23 +108,23 @@ export class Reactions {
         /* Take a snapshot of proposal in Sanity */
         const proposalCount = await sanity.fetch(`count(*[_type=="proposal"])`);
 
-        const proposalTitle = `Proposal #${proposalCount + 1} by @${messageReaction.message.author.username}`;
-        const proposalContent = `${messageReaction.message.content}`;
+        const proposalTitle = `Proposal #${proposalCount + 1} by @${reaction?.message?.author?.username}`;
+        const proposalContent = `${reaction.message.content}`;
 
         /* Pass to council forum */
         const webhookMessage = await webhookClient.send({
           threadName: proposalTitle,
           content: proposalContent +
-            `\n\n▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞\nReposted from: ${messageReaction.message.url}`
+            `\n\n▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞\nReposted from: ${reaction.message.url}`
         });
 
         const proposal = await sanity.create({
           _type: 'proposal',
           _id: webhookMessage.id,
           title: proposalTitle,
-          author: messageReaction.message.author.id,
-          serverMessage: `https://discord.com/channels/${messageReaction.message.guildId}/${messageReaction.message.channelId}/${messageReaction.message.id}`,
-          councilMessage: `https://discord.com/channels/${messageReaction.message.guildId}/${process.env.COUNCIL_CHANNEL_ID}/threads/${webhookMessage.id}`,
+          author: reaction?.message?.author?.id,
+          serverMessage: `https://discord.com/channels/${reaction.message.guildId}/${reaction.message.channelId}/${reaction.message.id}`,
+          councilMessage: `https://discord.com/channels/${reaction.message.guildId}/${process.env.COUNCIL_CHANNEL_ID}/threads/${webhookMessage.id}`,
           content: proposalContent
         });
       }
@@ -135,15 +135,15 @@ export class Reactions {
 
   @On({ event: 'messageReactionRemove' })
   @Guard(fetchFull, gateKeep)
-  async messageReactRemove([messageReaction, user]: ArgsOf<'messageReactionRemove'>, client: Client): Promise<void> {
+  async messageReactRemove([reaction, user]: ArgsOf<'messageReactionRemove'>, client: Client): Promise<void> {
     try {
       /*
         Filter channel and server wide reactions - check both for 
         channelId + parent channel ID for forum channels
         Capture for council channel
       */
-      if (messageReaction.message.channelId == process.env.COUNCIL_CHANNEL_ID ||
-        messageReaction.message.channel?.parentId == process.env.COUNCIL_CHANNEL_ID) {
+      if (reaction.message.channelId == process.env.COUNCIL_CHANNEL_ID ||
+        (reaction?.message?.channel as ThreadChannel | ForumChannel)?.parentId == process.env.COUNCIL_CHANNEL_ID) {
         /* 
            Check if member record exists, create one if not
         */
@@ -162,8 +162,8 @@ export class Reactions {
           return vote back to council member's balance
         */
         const proposalPatch = sanity
-          .patch(messageReaction.message.id)
-          .unset([`votes[_key=="${user.id}:${messageReaction.emoji.id}"]`]);
+          .patch(reaction.message.id)
+          .unset([`votes[_key=="${user.id}:${reaction.emoji.id}"]`]);
 
         const memberPatch = sanity
           .patch(user.id)
