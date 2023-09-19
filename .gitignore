@@ -1,0 +1,6 @@
+# npm
+node_modules
+
+# Ignore all env files except .example
+.env*
+!.env.example

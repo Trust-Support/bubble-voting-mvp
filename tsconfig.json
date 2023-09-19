@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "target": "esnext",
+    "module": "esnext",
+    "outDir": "build",
+    "strict": true,
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*"
+  ],
+}
+
