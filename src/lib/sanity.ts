@@ -62,7 +62,10 @@ export const submitVote = async (
         .patch(councilMessageReaction.message.id, p =>
             p.setIfMissing({ votes: [] })
                 .append('votes', [{
-                    author: user.id,
+                    author: {
+                        _ref: user.id,
+                        _type: 'member'
+                    },
                     emoji: councilMessageReaction.emoji.toString(),
                     _key: cookVoteKey(councilMessageReaction, user)
                 }])

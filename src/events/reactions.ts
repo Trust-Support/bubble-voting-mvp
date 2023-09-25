@@ -40,11 +40,7 @@ export class Reactions {
 
       const webhookMessage = await sendWebhookProposal(title, messageReaction?.message as Message);
 
-      console.log(webhookMessage)
-
       const sanityProposal = await createProposal(title, webhookMessage, messageReaction?.message as Message);
-
-      console.log(sanityProposal)
     } catch (err) {
       console.error(err);
     }
