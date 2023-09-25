@@ -12,6 +12,7 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*",
