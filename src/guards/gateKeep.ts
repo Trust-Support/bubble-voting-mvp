@@ -1,4 +1,4 @@
-import { type Client, type MessageReaction } from 'discord.js'
+import { GuildChannel, type Client, type MessageReaction } from 'discord.js'
 import { GuardFunction, ArgsOf, Next } from 'discordx'
 import { ThreadChannel, ForumChannel } from 'discord.js';
 
@@ -8,8 +8,10 @@ export default async function gateKeep(
     next: Next
 ): Promise<void> {
     /* Ignore for non-council channels */
+    const parentChannelId = (messageReaction?.message?.channel as GuildChannel)?.parentId
+
     const isCouncilChannel = messageReaction.message.channelId == process.env.COUNCIL_CHANNEL_ID ||
-        messageReaction?.message?.channel?.parentId == process.env.COUNCIL_CHANNEL_ID;
+        parentChannelId == process.env.COUNCIL_CHANNEL_ID;
 
     if (!isCouncilChannel) {
         return

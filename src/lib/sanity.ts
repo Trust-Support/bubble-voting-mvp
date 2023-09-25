@@ -1,5 +1,5 @@
 import { createClient } from '@sanity/client'
-import { Message, MessageReaction, Snowflake, User, messageLink } from 'discord.js';
+import { APIMessage, Message, MessageReaction, Snowflake, User, messageLink } from 'discord.js';
 
 export const sanity = createClient({
     projectId: process.env.SANITY_PROJECT_ID,
@@ -24,7 +24,7 @@ export const createMember = async (user: User) =>
 
 export const createProposal = async (
     title: string,
-    councilMessage: Message,
+    councilMessage: APIMessage,
     serverMessage: Message
 ) => {
     return await sanity.create({

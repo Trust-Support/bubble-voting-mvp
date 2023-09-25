@@ -1,5 +1,5 @@
-import { ArgsOf, Client, Guard } from 'discordx';
-import { Discord, On } from 'discordx';
+import { Message, type GuildChannel, MessageReaction, ForumChannel, DMChannel, User } from 'discord.js';
+import { ArgsOf, Client, Guard, Discord, On } from 'discordx';
 import { sanity, createProposal, submitVote, removeVote, fetchMember } from '../lib/sanity';
 import fetchFull from '../guards/fetchFull';
 import gateKeep from '../guards/gateKeep';
@@ -20,10 +20,12 @@ export class Reactions {
     bot: Client
   ): Promise<void> {
     try {
+      const parentChannelId = (messageReaction?.message?.channel as GuildChannel)?.parentId
+
       /* Check threshold, check emoji + ensure we haven't already Bubbled this */
       if (messageReaction.count !== Number(process.env.SERVER_THRESHOLD) ||
         `${messageReaction.emoji}` !== process.env.SERVER_EMOJI ||
-          messageReaction?.message?.channel?.parentId == process.env.COUNCIL_CHANNEL_ID ||
+          parentChannelId == process.env.COUNCIL_CHANNEL_ID ||
           await sanity.fetch(`*[_type=="proposal" && serverMessage=="${messageReaction.message.id}"][0]`
       ) !== null
       ) {
@@ -31,9 +33,9 @@ export class Reactions {
       }
  
       /* Dispatch webhook + take snapshot in Sanity */
-      const title = (await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`));
-      const webhookMessage = await sendWebhookProposal(title, messageReaction?.message);
-      const sanityProposal = await createProposal(title, webhookMessage, messageReaction?.message);
+      const title = (await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`)) || `${messageReaction?.message?.createdTimestamp}`;
+      const webhookMessage = await sendWebhookProposal(title, messageReaction?.message as Message);
+      const sanityProposal = await createProposal(title, webhookMessage, messageReaction?.message as Message);
     } catch (err) {
       console.error(err);
     }
@@ -62,7 +64,7 @@ export class Reactions {
         return
       }
 
-      await submitVote(messageReaction, interactionAuthor);
+      await submitVote(messageReaction as MessageReaction, interactionAuthor as User);
     } catch (err) {
       console.error(err);
     }
@@ -80,7 +82,7 @@ export class Reactions {
     client: Client,
   ): Promise<void> {
     try {
-      await removeVote(messageReaction, interactionAuthor);
+      await removeVote(messageReaction as MessageReaction, interactionAuthor as User);
     } catch (err) {
       console.error(err);
     }
