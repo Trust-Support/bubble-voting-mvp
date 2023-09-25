@@ -25,7 +25,7 @@ export default async function gateKeep(
        Get and verify roles for user
     */
     const guildMember: any | null = await (await bot.guilds.fetch(process.env.SERVER_ID as string)).members.resolve(interactionAuthor.id);
-    const isCouncilMemberReact = (await guildMember.fetch()).roles.resolve(process.env.MOD_ROLE) !== null;
+    const isCouncilMemberReact = (await guildMember.fetch()).roles.resolve(process.env.COUNCIL_ROLE) !== null;
 
     if (!isCouncilMemberReact) {
         await messageReaction.remove();
