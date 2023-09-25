@@ -1,4 +1,4 @@
-import { Message, type GuildChannel, MessageReaction, ForumChannel, DMChannel, User } from 'discord.js';
+import { Message, type GuildChannel, MessageReaction, ForumChannel, DMChannel, User, APIMessageActionRowComponent } from 'discord.js';
 import { ArgsOf, Client, Guard, Discord, On } from 'discordx';
 import { sanity, createProposal, submitVote, removeVote, fetchMember } from '../lib/sanity';
 import fetchFull from '../guards/fetchFull';
@@ -40,7 +40,7 @@ export class Reactions {
 
       const webhookMessage = await sendWebhookProposal(title, messageReaction?.message as Message);
 
-      const sanityProposal = await createProposal(title, webhookMessage, messageReaction?.message as Message);
+      const sanityProposal = await createProposal(title, webhookMessage as any, messageReaction?.message as Message);
     } catch (err) {
       console.error(err);
     }
