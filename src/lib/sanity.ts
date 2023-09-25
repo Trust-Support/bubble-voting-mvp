@@ -27,6 +27,9 @@ export const createProposal = async (
     councilMessage: APIMessage,
     serverMessage: Message
 ) => {
+    console.log(title);
+    console.log(councilMessage);
+
     return await sanity.create({
         _type: 'proposal',
         _id: councilMessage.id,

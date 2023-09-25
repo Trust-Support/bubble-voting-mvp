@@ -5,6 +5,7 @@ import fetchFull from '../guards/fetchFull';
 import gateKeep from '../guards/gateKeep';
 import { sendWebhookProposal } from '../lib/webhook';
 import { predict } from '../lib/openai';
+import emojiRegex from 'emoji-regex';
 
 @Discord()
 export class Reactions {
@@ -33,9 +34,17 @@ export class Reactions {
       }
  
       /* Dispatch webhook + take snapshot in Sanity */
-      const title = (await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`)) || `${messageReaction?.message?.createdTimestamp}`;
+      const prediction = await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`);
+
+      const title = !messageReaction?.message?.content?.length || !prediction ? `#${messageReaction?.message?.createdTimestamp}` : prediction.slice(0, 5);
+
       const webhookMessage = await sendWebhookProposal(title, messageReaction?.message as Message);
+
+      console.log(webhookMessage)
+
       const sanityProposal = await createProposal(title, webhookMessage, messageReaction?.message as Message);
+
+      console.log(sanityProposal)
     } catch (err) {
       console.error(err);
     }
@@ -53,7 +62,6 @@ export class Reactions {
     bot: Client
   ): Promise<void> {
     try {
-      // TODO: fetch balance only if possible
       const member = await fetchMember(interactionAuthor.id);
 
       const isMemberSolvent = member.balance > 0;

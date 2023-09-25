@@ -4,8 +4,19 @@ export const webhookClient = new WebhookClient({
     url: process.env.WEBHOOK_URL as string
 });
 
-export const sendWebhookProposal = async (title: string, message: Message): Promise<APIMessage> =>
-    await webhookClient.send({
-        threadName: `Proposal ${title} by @${message?.author?.username}`,
-        content: `${message.content}\n\n▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞\nReposted from: ${message.url}`
-    })
+export const sendWebhookProposal = async (title: string, message: Message): Promise<APIMessage> => {
+    try {
+        /* Extract attachments */
+        const attachments = [
+            ...message.embeds.map(({ url }) => url),
+            ...[...message.attachments.values()].map(({ url }) => url)
+        ];
+
+        await webhookClient.send({
+            threadName: `Proposal ${title} by @${message?.author?.username}`,
+            content: `${message.content}\n${attachments.join(' ')}\n\n▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞▝▞\nReposted from: ${message.url}`
+        })
+    } catch (err) {
+        console.error(err);
+    }
+}
