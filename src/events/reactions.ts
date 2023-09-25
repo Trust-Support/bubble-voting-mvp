@@ -1,6 +1,6 @@
 import { Message, type GuildChannel, MessageReaction, ForumChannel, DMChannel, User, APIMessageActionRowComponent } from 'discord.js';
 import { ArgsOf, Client, Guard, Discord, On } from 'discordx';
-import { sanity, createProposal, submitVote, removeVote, fetchMember } from '../lib/sanity';
+import { sanity, createProposal, submitVote, removeVote, fetchMember, createMember } from '../lib/sanity';
 import fetchFull from '../guards/fetchFull';
 import gateKeep from '../guards/gateKeep';
 import { sendWebhookProposal } from '../lib/webhook';
@@ -58,7 +58,13 @@ export class Reactions {
     bot: Client
   ): Promise<void> {
     try {
-      const member = await fetchMember(interactionAuthor.id);
+      let member = await fetchMember(interactionAuthor.id);
+
+      if (!member) {
+        member = await createMember(interactionAuthor as User);
+      }
+
+      console.log(member);
 
       const isMemberSolvent = member.balance > 0;
 

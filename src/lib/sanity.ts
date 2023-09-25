@@ -19,7 +19,8 @@ export const createMember = async (user: User) =>
     await sanity.create({
         _type: 'member',
         _id: user.id,
-        username: user.username
+        handle: user.username,
+        balance: 5
     });
 
 export const createProposal = async (
@@ -27,9 +28,6 @@ export const createProposal = async (
     councilMessage: APIMessage,
     serverMessage: Message
 ) => {
-    console.log(title);
-    console.log(councilMessage);
-
     return await sanity.create({
         _type: 'proposal',
         _id: councilMessage.id,
@@ -50,9 +48,13 @@ export const submitVote = async (
         "votes": *[_type=="proposal" && _id=="${councilMessageReaction.message.id}"]{votes}[0]
     }`)
 
-    //console.log(await sanity.delete({
-    //    query: `*[_type == "proposal"]`
-    //}));
+    /*console.log(await sanity.delete({
+        query: `*[_type == "proposal"]`
+    }));
+
+    console.log(await sanity.delete({
+        query: `*[_type == "member"]`
+    }));*/
 
     await sanity
         .transaction()
