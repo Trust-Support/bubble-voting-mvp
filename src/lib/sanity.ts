@@ -48,14 +48,6 @@ export const submitVote = async (
         "votes": *[_type=="proposal" && _id=="${councilMessageReaction.message.id}"]{votes}[0]
     }`)
 
-    /*console.log(await sanity.delete({
-        query: `*[_type == "proposal"]`
-    }));
-
-    console.log(await sanity.delete({
-        query: `*[_type == "member"]`
-    }));*/
-
     await sanity
         .transaction()
         .patch(user.id, p => 

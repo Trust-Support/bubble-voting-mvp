@@ -21,18 +21,19 @@ export class Reactions {
     bot: Client
   ): Promise<void> {
     try {
-      const parentChannelId = (messageReaction?.message?.channel as GuildChannel)?.parentId
+      const parentChannelId = (messageReaction?.message?.channel as GuildChannel)?.parentId;
+      const sanityMatch = await sanity.fetch(`*[_type=="proposal" && serverMessage=="${messageReaction.message.url}"][0]`);
+      const hasSanityMatch = sanityMatch != null; 
 
       /* Check threshold, check emoji + ensure we haven't already Bubbled this */
       if (messageReaction.count !== Number(process.env.SERVER_THRESHOLD) ||
         `${messageReaction.emoji}` !== process.env.SERVER_EMOJI ||
-          parentChannelId == process.env.COUNCIL_CHANNEL_ID ||
-          await sanity.fetch(`*[_type=="proposal" && serverMessage=="${messageReaction.message.id}"][0]`
-      ) !== null
+        parentChannelId == process.env.COUNCIL_CHANNEL_ID ||
+        hasSanityMatch
       ) {
         return
       }
- 
+
       /* Dispatch webhook + take snapshot in Sanity */
       const prediction = await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`);
 
