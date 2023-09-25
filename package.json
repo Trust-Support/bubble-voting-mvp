@@ -8,7 +8,7 @@
     "build": "tsc",
     "build:changelog": "npx @discordx/changelog --src src",
     "dev": "tsx src/index.ts",
-    "start": "node build/src/index.js",
+    "start": "tsx build/src/index.js",
     "watch": "nodemon --exec tsx src/index.ts"
   },
   "dependencies": {
