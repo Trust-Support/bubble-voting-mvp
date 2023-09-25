@@ -1,5 +1,4 @@
 import { type Message, WebhookClient, APIMessage } from 'discord.js';
-import { TypeOf } from 'zod';
 
 export const webhookClient = new WebhookClient({
     url: process.env.WEBHOOK_URL as string
