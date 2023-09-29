@@ -28,7 +28,12 @@ export default async function gateKeep(
     const isCouncilMemberReact = (await guildMember.fetch()).roles.resolve(process.env.COUNCIL_ROLE) !== null;
 
     if (!isCouncilMemberReact) {
-        await messageReaction.remove();
+        const { id: emojiId } = messageReaction.emoji;
+        const reaction = await messageReaction.message.reactions.resolve(`${messageReaction.emoji.id}`) as MessageReaction;
+
+        if (!!reaction) {
+            console.log(await reaction.users.remove(interactionAuthor.id));
+        }
 
         return
     } else {
