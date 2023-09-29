@@ -14,38 +14,40 @@ export class Reactions {
     Serverwide emoji add capture
   ----------------------------------------
   */
-  @On({ event: 'messageReactionAdd' })
-  @Guard(fetchFull)
-  async serverlMessageReact(
-    [messageReaction, interactionAuthor]: ArgsOf<'messageReactionAdd'>,
-    bot: Client
-  ): Promise<void> {
-    try {
-      const parentChannelId = (messageReaction?.message?.channel as GuildChannel)?.parentId;
-      const sanityMatch = await sanity.fetch(`*[_type=="proposal" && serverMessage=="${messageReaction.message.url}"][0]`);
-      const hasSanityMatch = sanityMatch != null; 
+  //@On({ event: 'messageReactionAdd' })
+  //@Guard(fetchFull)
+  //async serverlMessageReact(
+  //  [messageReaction, interactionAuthor]: ArgsOf<'messageReactionAdd'>,
+  //  bot: Client
+  //): Promise<void> {
+  //  return
 
-      /* Check threshold, check emoji + ensure we haven't already Bubbled this */
-      if (messageReaction.count !== Number(process.env.SERVER_THRESHOLD) ||
-        `${messageReaction.emoji}` !== process.env.SERVER_EMOJI ||
-        parentChannelId == process.env.COUNCIL_CHANNEL_ID ||
-        hasSanityMatch
-      ) {
-        return
-      }
+  //  try {
+  //    const parentChannelId = (messageReaction?.message?.channel as GuildChannel)?.parentId;
+  //    const sanityMatch = await sanity.fetch(`*[_type=="proposal" && serverMessage=="${messageReaction.message.url}"][0]`);
+  //    const hasSanityMatch = sanityMatch != null; 
 
-      /* Dispatch webhook + take snapshot in Sanity */
-      const prediction = await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`);
+  //    /* Check threshold, check emoji + ensure we haven't already Bubbled this */
+  //    if (messageReaction.count !== Number(process.env.SERVER_THRESHOLD) ||
+  //      `${messageReaction.emoji}` !== process.env.SERVER_EMOJI ||
+  //      parentChannelId == process.env.COUNCIL_CHANNEL_ID ||
+  //      hasSanityMatch
+  //    ) {
+  //      return
+  //    }
 
-      const title = !messageReaction?.message?.content?.length || !prediction ? `#${messageReaction?.message?.createdTimestamp}` : prediction.slice(0, 5);
+  //    /* Dispatch webhook + take snapshot in Sanity */
+  //    const prediction = await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`);
 
-      const webhookMessage = await sendWebhookProposal(title, messageReaction?.message as Message);
+  //    const title = !messageReaction?.message?.content?.length || !prediction ? `#${messageReaction?.message?.createdTimestamp}` : prediction.slice(0, 5);
 
-      const sanityProposal = await createProposal(title, webhookMessage as any, messageReaction?.message as Message);
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  //    const webhookMessage = await sendWebhookProposal(title, messageReaction?.message as Message);
+
+  //    const sanityProposal = await createProposal(title, webhookMessage as any, messageReaction?.message as Message);
+  //  } catch (err) {
+  //    console.error(err);
+  //  }
+  //}
 
   /*
   ----------------------------------------
