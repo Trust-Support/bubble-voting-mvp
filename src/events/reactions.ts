@@ -72,7 +72,12 @@ export class Reactions {
       const isMemberSolvent = member.balance > 0;
 
       if (!isMemberSolvent) {
-        await messageReaction.remove();
+        const { id: emojiId } = messageReaction.emoji;
+        const reaction = await messageReaction.message.reactions.resolve(`${messageReaction.emoji.id}`) as MessageReaction;
+
+        if (!!reaction) {
+          console.log(await reaction.users.remove(interactionAuthor.id));
+        }
 
         return
       }
