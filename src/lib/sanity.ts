@@ -10,7 +10,7 @@ export const sanity = createClient({
 });
 
 export const cookVoteKey = (reaction: MessageReaction, user: User) => 
-    `${reaction.message.id}:${user.id}:${reaction.emoji.id}`
+    `${reaction.message.id}:${user.id}:${reaction.emoji.id || reaction.emoji.name}`
 
 export const fetchMember = async (memberId: Snowflake) => 
     await sanity.fetch(`*[_type=="member" && _id=="${memberId}"][0]`);
