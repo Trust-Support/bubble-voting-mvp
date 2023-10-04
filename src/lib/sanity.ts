@@ -32,7 +32,7 @@ export const createProposal = async (
         _type: 'proposal',
         _id: councilMessage.id,
         title: title,
-        author: councilMessage.author.id,
+        author: serverMessage.author.id,
         content: councilMessage.content,
         serverMessage: serverMessage.url,
         councilMessage: `https://discord.com/channels/${process.env.SERVER_ID}/${councilMessage.channel_id}/threads/${councilMessage.id}`
