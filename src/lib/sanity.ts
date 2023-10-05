@@ -8,9 +8,21 @@ export const sanity = createClient({
     useCdn: false,
     apiVersion: '2023-09-14'
 });
+ 
+export const cookVoteKey = (reaction: MessageReaction, user: User) => {
+    let emoji;
 
-export const cookVoteKey = (reaction: MessageReaction, user: User) => 
-    `${reaction.message.id}:${user.id}:${reaction.emoji.identifier}`
+    if (reaction.emoji?.id) {
+        emoji = reaction.emoji.id;
+    } else {
+        const encoder = new TextEncoder();
+        emoji = encoder
+            .encode(reaction.emoji.identifier)
+            .join('');
+    }
+
+    return `${reaction.message.id}:${user.id}:${emoji}`
+}
 
 export const fetchMember = async (memberId: Snowflake) => 
     await sanity.fetch(`*[_type=="member" && _id=="${memberId}"][0]`);

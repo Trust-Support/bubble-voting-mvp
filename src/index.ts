@@ -2,6 +2,7 @@ import { dirname, importx } from '@discordx/importer';
 import type { Interaction, Message } from 'discord.js';
 import { IntentsBitField, Partials } from 'discord.js';
 import { Client } from 'discordx';
+import { cookVoteKey, sanity } from './lib/sanity';
 
 export const bot = new Client({
   // Discord intents
