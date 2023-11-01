@@ -69,7 +69,7 @@ export class Reactions {
 
       const isMemberSolvent = member.balance > 0;
 
-      if (!isMemberSolvent) {
+      if (!isMemberSolvent || process.env.VOTING_DISABLED) {
         const { id: emojiId } = messageReaction.emoji;
         const reaction = await messageReaction.message.reactions.resolve(`${messageReaction.emoji.id}`) as MessageReaction;
 
