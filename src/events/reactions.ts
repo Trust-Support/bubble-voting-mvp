@@ -37,11 +37,19 @@ export class Reactions {
       /* Dispatch webhook + take snapshot in Sanity */
       const prediction = await predict(`translate given proposal into 4 emojis: "${messageReaction.message.content}"`);
 
-      const title = !messageReaction?.message?.content?.length || !prediction ? `#${messageReaction?.message?.createdTimestamp}` : prediction.slice(0, 5);
+      const messageContentLength = messageReaction?.message?.content?.length;
 
-      const webhookMessage = await sendWebhookProposal(title, (messageReaction?.message?.length > 2000 ? `${messageReaction?.message?.substring(0, 1500)}...` : messageReaction?.message) as Message);
+      const title = !messageContentLength || !prediction ? `#${messageReaction?.message?.createdTimestamp}` : prediction.slice(0, 5);
 
-      const sanityProposal = await createProposal(title, webhookMessage as any, messageReaction?.message as Message);
+      const webhookMessage = await sendWebhookProposal(title, {
+          ...messageReaction?.message,
+          url: messageReaction?.message?.url,
+          content: messageContentLength && messageContentLength >= 1000 ?
+          `${messageReaction?.message?.content?.substring(0, 1000)}...` :
+          messageReaction?.message?.content,
+      } as any);
+
+      const sanityProposal = await createProposal(title, webhookMessage as any, messageReaction?.message as any);
     } catch (err) {
       console.error(err);
     }
