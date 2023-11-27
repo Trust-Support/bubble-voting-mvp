@@ -39,7 +39,7 @@ export class Reactions {
 
       const title = !messageReaction?.message?.content?.length || !prediction ? `#${messageReaction?.message?.createdTimestamp}` : prediction.slice(0, 5);
 
-      const webhookMessage = await sendWebhookProposal(title, messageReaction?.message as Message);
+      const webhookMessage = await sendWebhookProposal(title, (messageReaction?.message?.length > 2000 ? `${messageReaction?.message?.substring(0, 1500)}...` : messageReaction?.message) as Message);
 
       const sanityProposal = await createProposal(title, webhookMessage as any, messageReaction?.message as Message);
     } catch (err) {
